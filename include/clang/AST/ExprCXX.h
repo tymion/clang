@@ -30,6 +30,7 @@
 #include "clang/Basic/LLVM.h"
 #include "clang/Basic/Lambda.h"
 #include "clang/Basic/LangOptions.h"
+#include "clang/Basic/Metaobjects.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
@@ -246,8 +247,7 @@ public:
   /// Note that this method cannot be called if config has already been set to a
   /// non-null value.
   void setConfig(CallExpr *E) {
-    assert(!getConfig() &&
-           "Cannot call setConfig if config is not null");
+    assert(!getConfig() && "Cannot call setConfig if config is not null");
     setPreArg(CONFIG, E);
     setInstantiationDependent(isInstantiationDependent() ||
                               E->isInstantiationDependent());
@@ -280,10 +280,9 @@ private:
 protected:
   friend class ASTStmtReader;
 
-  CXXNamedCastExpr(StmtClass SC, QualType ty, ExprValueKind VK,
-                   CastKind kind, Expr *op, unsigned PathSize,
-                   TypeSourceInfo *writtenTy, SourceLocation l,
-                   SourceLocation RParenLoc,
+  CXXNamedCastExpr(StmtClass SC, QualType ty, ExprValueKind VK, CastKind kind,
+                   Expr *op, unsigned PathSize, TypeSourceInfo *writtenTy,
+                   SourceLocation l, SourceLocation RParenLoc,
                    SourceRange AngleBrackets)
       : ExplicitCastExpr(SC, ty, VK, kind, op, PathSize, writtenTy), Loc(l),
         RParenLoc(RParenLoc), AngleBrackets(AngleBrackets) {}
@@ -339,12 +338,10 @@ public:
   friend class CastExpr;
   friend TrailingObjects;
 
-  static CXXStaticCastExpr *Create(const ASTContext &Context, QualType T,
-                                   ExprValueKind VK, CastKind K, Expr *Op,
-                                   const CXXCastPath *Path,
-                                   TypeSourceInfo *Written, SourceLocation L,
-                                   SourceLocation RParenLoc,
-                                   SourceRange AngleBrackets);
+  static CXXStaticCastExpr *
+  Create(const ASTContext &Context, QualType T, ExprValueKind VK, CastKind K,
+         Expr *Op, const CXXCastPath *Path, TypeSourceInfo *Written,
+         SourceLocation L, SourceLocation RParenLoc, SourceRange AngleBrackets);
   static CXXStaticCastExpr *CreateEmpty(const ASTContext &Context,
                                         unsigned PathSize);
 
@@ -375,12 +372,10 @@ public:
   friend class CastExpr;
   friend TrailingObjects;
 
-  static CXXDynamicCastExpr *Create(const ASTContext &Context, QualType T,
-                                    ExprValueKind VK, CastKind Kind, Expr *Op,
-                                    const CXXCastPath *Path,
-                                    TypeSourceInfo *Written, SourceLocation L,
-                                    SourceLocation RParenLoc,
-                                    SourceRange AngleBrackets);
+  static CXXDynamicCastExpr *
+  Create(const ASTContext &Context, QualType T, ExprValueKind VK, CastKind Kind,
+         Expr *Op, const CXXCastPath *Path, TypeSourceInfo *Written,
+         SourceLocation L, SourceLocation RParenLoc, SourceRange AngleBrackets);
 
   static CXXDynamicCastExpr *CreateEmpty(const ASTContext &Context,
                                          unsigned pathSize);
@@ -404,10 +399,9 @@ class CXXReinterpretCastExpr final
     : public CXXNamedCastExpr,
       private llvm::TrailingObjects<CXXReinterpretCastExpr,
                                     CXXBaseSpecifier *> {
-  CXXReinterpretCastExpr(QualType ty, ExprValueKind vk, CastKind kind,
-                         Expr *op, unsigned pathSize,
-                         TypeSourceInfo *writtenTy, SourceLocation l,
-                         SourceLocation RParenLoc,
+  CXXReinterpretCastExpr(QualType ty, ExprValueKind vk, CastKind kind, Expr *op,
+                         unsigned pathSize, TypeSourceInfo *writtenTy,
+                         SourceLocation l, SourceLocation RParenLoc,
                          SourceRange AngleBrackets)
       : CXXNamedCastExpr(CXXReinterpretCastExprClass, ty, vk, kind, op,
                          pathSize, writtenTy, l, RParenLoc, AngleBrackets) {}
@@ -419,12 +413,10 @@ public:
   friend class CastExpr;
   friend TrailingObjects;
 
-  static CXXReinterpretCastExpr *Create(const ASTContext &Context, QualType T,
-                                        ExprValueKind VK, CastKind Kind,
-                                        Expr *Op, const CXXCastPath *Path,
-                                 TypeSourceInfo *WrittenTy, SourceLocation L,
-                                        SourceLocation RParenLoc,
-                                        SourceRange AngleBrackets);
+  static CXXReinterpretCastExpr *
+  Create(const ASTContext &Context, QualType T, ExprValueKind VK, CastKind Kind,
+         Expr *Op, const CXXCastPath *Path, TypeSourceInfo *WrittenTy,
+         SourceLocation L, SourceLocation RParenLoc, SourceRange AngleBrackets);
   static CXXReinterpretCastExpr *CreateEmpty(const ASTContext &Context,
                                              unsigned pathSize);
 
@@ -446,8 +438,8 @@ class CXXConstCastExpr final
   CXXConstCastExpr(QualType ty, ExprValueKind VK, Expr *op,
                    TypeSourceInfo *writtenTy, SourceLocation l,
                    SourceLocation RParenLoc, SourceRange AngleBrackets)
-      : CXXNamedCastExpr(CXXConstCastExprClass, ty, VK, CK_NoOp, op,
-                         0, writtenTy, l, RParenLoc, AngleBrackets) {}
+      : CXXNamedCastExpr(CXXConstCastExprClass, ty, VK, CK_NoOp, op, 0,
+                         writtenTy, l, RParenLoc, AngleBrackets) {}
 
   explicit CXXConstCastExpr(EmptyShell Empty)
       : CXXNamedCastExpr(CXXConstCastExprClass, Empty, 0) {}
@@ -532,7 +524,7 @@ public:
   /// removed).
   Expr *getCookedLiteral();
   const Expr *getCookedLiteral() const {
-    return const_cast<UserDefinedLiteral*>(this)->getCookedLiteral();
+    return const_cast<UserDefinedLiteral *>(this)->getCookedLiteral();
   }
 
   SourceLocation getBeginLoc() const {
@@ -637,8 +629,8 @@ public:
              SubExpr->containsUnexpandedParameterPack()),
         SubExpr(SubExpr) {}
 
-  Expr *getSubExpr() { return static_cast<Expr*>(SubExpr); }
-  const Expr *getSubExpr() const { return static_cast<const Expr*>(SubExpr); }
+  Expr *getSubExpr() { return static_cast<Expr *>(SubExpr); }
+  const Expr *getSubExpr() const { return static_cast<const Expr *>(SubExpr); }
 
   SourceLocation getBeginLoc() const LLVM_READONLY {
     return SubExpr->getBeginLoc();
@@ -696,9 +688,9 @@ public:
   CXXTypeidExpr(EmptyShell Empty, bool isExpr)
       : Expr(CXXTypeidExprClass, Empty) {
     if (isExpr)
-      Operand = (Expr*)nullptr;
+      Operand = (Expr *)nullptr;
     else
-      Operand = (TypeSourceInfo*)nullptr;
+      Operand = (TypeSourceInfo *)nullptr;
   }
 
   /// Determine whether this typeid has a type operand which is potentially
@@ -724,7 +716,7 @@ public:
 
   Expr *getExprOperand() const {
     assert(!isTypeOperand() && "Cannot call getExprOperand for typeid(type)");
-    return static_cast<Expr*>(Operand.get<Stmt *>());
+    return static_cast<Expr *>(Operand.get<Stmt *>());
   }
 
   void setExprOperand(Expr *E) {
@@ -767,14 +759,12 @@ public:
 
   MSPropertyRefExpr(Expr *baseExpr, MSPropertyDecl *decl, bool isArrow,
                     QualType ty, ExprValueKind VK,
-                    NestedNameSpecifierLoc qualifierLoc,
-                    SourceLocation nameLoc)
+                    NestedNameSpecifierLoc qualifierLoc, SourceLocation nameLoc)
       : Expr(MSPropertyRefExprClass, ty, VK, OK_Ordinary,
              /*type-dependent*/ false, baseExpr->isValueDependent(),
              baseExpr->isInstantiationDependent(),
              baseExpr->containsUnexpandedParameterPack()),
-        BaseExpr(baseExpr), TheDecl(decl),
-        MemberLoc(nameLoc), IsArrow(isArrow),
+        BaseExpr(baseExpr), TheDecl(decl), MemberLoc(nameLoc), IsArrow(isArrow),
         QualifierLoc(qualifierLoc) {}
 
   MSPropertyRefExpr(EmptyShell Empty) : Expr(MSPropertyRefExprClass, Empty) {}
@@ -793,13 +783,13 @@ public:
     else if (QualifierLoc)
       return QualifierLoc.getBeginLoc();
     else
-        return MemberLoc;
+      return MemberLoc;
   }
 
   SourceLocation getEndLoc() const { return getMemberLoc(); }
 
   child_range children() {
-    return child_range((Stmt**)&BaseExpr, (Stmt**)&BaseExpr + 1);
+    return child_range((Stmt **)&BaseExpr, (Stmt **)&BaseExpr + 1);
   }
 
   static bool classof(const Stmt *T) {
@@ -905,11 +895,11 @@ public:
         Operand(Operand), UuidStr(UuidStr), Range(R) {}
 
   CXXUuidofExpr(EmptyShell Empty, bool isExpr)
-    : Expr(CXXUuidofExprClass, Empty) {
+      : Expr(CXXUuidofExprClass, Empty) {
     if (isExpr)
-      Operand = (Expr*)nullptr;
+      Operand = (Expr *)nullptr;
     else
-      Operand = (TypeSourceInfo*)nullptr;
+      Operand = (TypeSourceInfo *)nullptr;
   }
 
   bool isTypeOperand() const { return Operand.is<TypeSourceInfo *>(); }
@@ -931,7 +921,7 @@ public:
 
   Expr *getExprOperand() const {
     assert(!isTypeOperand() && "Cannot call getExprOperand for __uuidof(type)");
-    return static_cast<Expr*>(Operand.get<Stmt *>());
+    return static_cast<Expr *>(Operand.get<Stmt *>());
   }
 
   void setExprOperand(Expr *E) {
@@ -1194,9 +1184,7 @@ public:
 
   const CXXDestructorDecl *getDestructor() const { return Destructor; }
 
-  void setDestructor(const CXXDestructorDecl *Dtor) {
-    Destructor = Dtor;
-  }
+  void setDestructor(const CXXDestructorDecl *Dtor) { Destructor = Dtor; }
 };
 
 /// Represents binding an expression to a temporary.
@@ -1217,11 +1205,10 @@ class CXXBindTemporaryExpr : public Expr {
   CXXTemporary *Temp = nullptr;
   Stmt *SubExpr = nullptr;
 
-  CXXBindTemporaryExpr(CXXTemporary *temp, Expr* SubExpr)
-      : Expr(CXXBindTemporaryExprClass, SubExpr->getType(),
-             VK_RValue, OK_Ordinary, SubExpr->isTypeDependent(),
-             SubExpr->isValueDependent(),
-             SubExpr->isInstantiationDependent(),
+  CXXBindTemporaryExpr(CXXTemporary *temp, Expr *SubExpr)
+      : Expr(CXXBindTemporaryExprClass, SubExpr->getType(), VK_RValue,
+             OK_Ordinary, SubExpr->isTypeDependent(),
+             SubExpr->isValueDependent(), SubExpr->isInstantiationDependent(),
              SubExpr->containsUnexpandedParameterPack()),
         Temp(temp), SubExpr(SubExpr) {}
 
@@ -1230,7 +1217,7 @@ public:
       : Expr(CXXBindTemporaryExprClass, Empty) {}
 
   static CXXBindTemporaryExpr *Create(const ASTContext &C, CXXTemporary *Temp,
-                                      Expr* SubExpr);
+                                      Expr *SubExpr);
 
   CXXTemporary *getTemporary() { return Temp; }
   const CXXTemporary *getTemporary() const { return Temp; }
@@ -1522,11 +1509,11 @@ class CXXFunctionalCastExpr final
   SourceLocation RParenLoc;
 
   CXXFunctionalCastExpr(QualType ty, ExprValueKind VK,
-                        TypeSourceInfo *writtenTy,
-                        CastKind kind, Expr *castExpr, unsigned pathSize,
+                        TypeSourceInfo *writtenTy, CastKind kind,
+                        Expr *castExpr, unsigned pathSize,
                         SourceLocation lParenLoc, SourceLocation rParenLoc)
-      : ExplicitCastExpr(CXXFunctionalCastExprClass, ty, VK, kind,
-                         castExpr, pathSize, writtenTy),
+      : ExplicitCastExpr(CXXFunctionalCastExprClass, ty, VK, kind, castExpr,
+                         pathSize, writtenTy),
         LParenLoc(lParenLoc), RParenLoc(rParenLoc) {}
 
   explicit CXXFunctionalCastExpr(EmptyShell Shell, unsigned PathSize)
@@ -1536,13 +1523,10 @@ public:
   friend class CastExpr;
   friend TrailingObjects;
 
-  static CXXFunctionalCastExpr *Create(const ASTContext &Context, QualType T,
-                                       ExprValueKind VK,
-                                       TypeSourceInfo *Written,
-                                       CastKind Kind, Expr *Op,
-                                       const CXXCastPath *Path,
-                                       SourceLocation LPLoc,
-                                       SourceLocation RPLoc);
+  static CXXFunctionalCastExpr *
+  Create(const ASTContext &Context, QualType T, ExprValueKind VK,
+         TypeSourceInfo *Written, CastKind Kind, Expr *Op,
+         const CXXCastPath *Path, SourceLocation LPLoc, SourceLocation RPLoc);
   static CXXFunctionalCastExpr *CreateEmpty(const ASTContext &Context,
                                             unsigned PathSize);
 
@@ -1721,9 +1705,7 @@ public:
   }
 
   /// Retrieve the location of this lambda's capture-default, if any.
-  SourceLocation getCaptureDefaultLoc() const {
-    return CaptureDefaultLoc;
-  }
+  SourceLocation getCaptureDefaultLoc() const { return CaptureDefaultLoc; }
 
   /// Determine whether one of this lambda's captures is an init-capture.
   bool isInitCapture(const LambdaCapture *Capture) const;
@@ -1887,9 +1869,7 @@ public:
   explicit CXXScalarValueInitExpr(EmptyShell Shell)
       : Expr(CXXScalarValueInitExprClass, Shell) {}
 
-  TypeSourceInfo *getTypeSourceInfo() const {
-    return TypeInfo;
-  }
+  TypeSourceInfo *getTypeSourceInfo() const { return TypeInfo; }
 
   SourceLocation getRParenLoc() const {
     return CXXScalarValueInitExprBits.RParenLoc;
@@ -2314,12 +2294,11 @@ class CXXPseudoDestructorExpr : public Expr {
   PseudoDestructorTypeStorage DestroyedType;
 
 public:
-  CXXPseudoDestructorExpr(const ASTContext &Context,
-                          Expr *Base, bool isArrow, SourceLocation OperatorLoc,
+  CXXPseudoDestructorExpr(const ASTContext &Context, Expr *Base, bool isArrow,
+                          SourceLocation OperatorLoc,
                           NestedNameSpecifierLoc QualifierLoc,
                           TypeSourceInfo *ScopeType,
-                          SourceLocation ColonColonLoc,
-                          SourceLocation TildeLoc,
+                          SourceLocation ColonColonLoc, SourceLocation TildeLoc,
                           PseudoDestructorTypeStorage DestroyedType);
 
   explicit CXXPseudoDestructorExpr(EmptyShell Shell)
@@ -2439,8 +2418,7 @@ class TypeTraitExpr final
   // TypeTraitExpr.
 
   TypeTraitExpr(QualType T, SourceLocation Loc, TypeTrait Kind,
-                ArrayRef<TypeSourceInfo *> Args,
-                SourceLocation RParenLoc,
+                ArrayRef<TypeSourceInfo *> Args, SourceLocation RParenLoc,
                 bool Value);
 
   TypeTraitExpr(EmptyShell Empty) : Expr(TypeTraitExprClass, Empty) {}
@@ -2458,8 +2436,7 @@ public:
   static TypeTraitExpr *Create(const ASTContext &C, QualType T,
                                SourceLocation Loc, TypeTrait Kind,
                                ArrayRef<TypeSourceInfo *> Args,
-                               SourceLocation RParenLoc,
-                               bool Value);
+                               SourceLocation RParenLoc, bool Value);
 
   static TypeTraitExpr *CreateDeserialized(const ASTContext &C,
                                            unsigned NumArgs);
@@ -2533,15 +2510,15 @@ public:
   friend class ASTStmtReader;
 
   ArrayTypeTraitExpr(SourceLocation loc, ArrayTypeTrait att,
-                     TypeSourceInfo *queried, uint64_t value,
-                     Expr *dimension, SourceLocation rparen, QualType ty)
-      : Expr(ArrayTypeTraitExprClass, ty, VK_RValue, OK_Ordinary,
-             false, queried->getType()->isDependentType(),
+                     TypeSourceInfo *queried, uint64_t value, Expr *dimension,
+                     SourceLocation rparen, QualType ty)
+      : Expr(ArrayTypeTraitExprClass, ty, VK_RValue, OK_Ordinary, false,
+             queried->getType()->isDependentType(),
              (queried->getType()->isInstantiationDependentType() ||
               (dimension && dimension->isInstantiationDependent())),
              queried->getType()->containsUnexpandedParameterPack()),
-        ATT(att), Value(value), Dimension(dimension),
-        Loc(loc), RParen(rparen), QueriedType(queried) {}
+        ATT(att), Value(value), Dimension(dimension), Loc(loc), RParen(rparen),
+        QueriedType(queried) {}
 
   explicit ArrayTypeTraitExpr(EmptyShell Empty)
       : Expr(ArrayTypeTraitExprClass, Empty), ATT(0) {}
@@ -2555,7 +2532,10 @@ public:
 
   TypeSourceInfo *getQueriedTypeSourceInfo() const { return QueriedType; }
 
-  uint64_t getValue() const { assert(!isTypeDependent()); return Value; }
+  uint64_t getValue() const {
+    assert(!isTypeDependent());
+    return Value;
+  }
 
   Expr *getDimensionExpression() const { return Dimension; }
 
@@ -2590,19 +2570,17 @@ class ExpressionTraitExpr : public Expr {
   SourceLocation RParen;
 
   /// The expression being queried.
-  Expr* QueriedExpression = nullptr;
+  Expr *QueriedExpression = nullptr;
 
 public:
   friend class ASTStmtReader;
 
-  ExpressionTraitExpr(SourceLocation loc, ExpressionTrait et,
-                     Expr *queried, bool value,
-                     SourceLocation rparen, QualType resultType)
+  ExpressionTraitExpr(SourceLocation loc, ExpressionTrait et, Expr *queried,
+                      bool value, SourceLocation rparen, QualType resultType)
       : Expr(ExpressionTraitExprClass, resultType, VK_RValue, OK_Ordinary,
              false, // Not type-dependent
              // Value-dependent if the argument is type-dependent.
-             queried->isTypeDependent(),
-             queried->isInstantiationDependent(),
+             queried->isTypeDependent(), queried->isInstantiationDependent(),
              queried->containsUnexpandedParameterPack()),
         ET(et), Value(value), Loc(loc), RParen(rparen),
         QueriedExpression(queried) {}
@@ -3231,7 +3209,7 @@ public:
   arg_iterator arg_end() { return arg_begin() + arg_size(); }
   arg_range arguments() { return arg_range(arg_begin(), arg_end()); }
 
-  using const_arg_iterator = const Expr* const *;
+  using const_arg_iterator = const Expr *const *;
   using const_arg_range = llvm::iterator_range<const_arg_iterator>;
 
   const_arg_iterator arg_begin() const { return getTrailingObjects<Expr *>(); }
@@ -3826,9 +3804,7 @@ public:
   }
 
   // Iterators
-  child_range children() {
-    return child_range(&Pattern, &Pattern + 1);
-  }
+  child_range children() { return child_range(&Pattern, &Pattern + 1); }
 };
 
 /// Represents an expression that computes the length of a parameter
@@ -3875,7 +3851,8 @@ class SizeOfPackExpr final
   /// the given parameter pack.
   SizeOfPackExpr(QualType SizeType, SourceLocation OperatorLoc, NamedDecl *Pack,
                  SourceLocation PackLoc, SourceLocation RParenLoc,
-                 Optional<unsigned> Length, ArrayRef<TemplateArgument> PartialArgs)
+                 Optional<unsigned> Length,
+                 ArrayRef<TemplateArgument> PartialArgs)
       : Expr(SizeOfPackExprClass, SizeType, VK_RValue, OK_Ordinary,
              /*TypeDependent=*/false, /*ValueDependent=*/!Length,
              /*InstantiationDependent=*/!Length,
@@ -3928,9 +3905,7 @@ public:
   ///
   ///   template<typename ...Ts> using X = int[sizeof...(Ts)];
   ///   template<typename ...Us> void f(X<Us..., 1, 2, 3, Us...>);
-  bool isPartiallySubstituted() const {
-    return isValueDependent() && Length;
-  }
+  bool isPartiallySubstituted() const { return isValueDependent() && Length; }
 
   /// Get
   ArrayRef<TemplateArgument> getPartialArguments() const {
@@ -4031,8 +4006,7 @@ class SubstNonTypeTemplateParmPackExpr : public Expr {
       : Expr(SubstNonTypeTemplateParmPackExprClass, Empty) {}
 
 public:
-  SubstNonTypeTemplateParmPackExpr(QualType T,
-                                   ExprValueKind ValueKind,
+  SubstNonTypeTemplateParmPackExpr(QualType T, ExprValueKind ValueKind,
                                    NonTypeTemplateParmDecl *Param,
                                    SourceLocation NameLoc,
                                    const TemplateArgument &ArgPack);
@@ -4110,7 +4084,7 @@ public:
 
   /// Iterators over the parameters which the parameter pack expanded
   /// into.
-  using iterator = ParmVarDecl * const *;
+  using iterator = ParmVarDecl *const *;
   iterator begin() const { return getTrailingObjects<ParmVarDecl *>(); }
   iterator end() const { return begin() + NumParameters; }
 
@@ -4177,7 +4151,7 @@ public:
   MaterializeTemporaryExpr(QualType T, Expr *Temporary,
                            bool BoundToLvalueReference)
       : Expr(MaterializeTemporaryExprClass, T,
-             BoundToLvalueReference? VK_LValue : VK_XValue, OK_Ordinary,
+             BoundToLvalueReference ? VK_LValue : VK_XValue, OK_Ordinary,
              Temporary->isTypeDependent(), Temporary->isValueDependent(),
              Temporary->isInstantiationDependent(),
              Temporary->containsUnexpandedParameterPack()),
@@ -4228,9 +4202,7 @@ public:
 
   /// Determine whether this materialized temporary is bound to an
   /// lvalue reference; otherwise, it's bound to an rvalue reference.
-  bool isBoundToLvalueReference() const {
-    return getValueKind() == VK_LValue;
-  }
+  bool isBoundToLvalueReference() const { return getValueKind() == VK_LValue; }
 
   SourceLocation getBeginLoc() const LLVM_READONLY {
     return getTemporary()->getBeginLoc();
@@ -4287,8 +4259,8 @@ public:
 
   CXXFoldExpr(EmptyShell Empty) : Expr(CXXFoldExprClass, Empty) {}
 
-  Expr *getLHS() const { return static_cast<Expr*>(SubExprs[0]); }
-  Expr *getRHS() const { return static_cast<Expr*>(SubExprs[1]); }
+  Expr *getLHS() const { return static_cast<Expr *>(SubExprs[0]); }
+  Expr *getRHS() const { return static_cast<Expr *>(SubExprs[1]); }
 
   /// Does this produce a right-associated sequence of operators?
   bool isRightFold() const {
@@ -4380,22 +4352,22 @@ public:
   SourceLocation getKeywordLoc() const { return KeywordLoc; }
 
   Expr *getCommonExpr() const {
-    return static_cast<Expr*>(SubExprs[SubExpr::Common]);
+    return static_cast<Expr *>(SubExprs[SubExpr::Common]);
   }
 
   /// getOpaqueValue - Return the opaque value placeholder.
   OpaqueValueExpr *getOpaqueValue() const { return OpaqueValue; }
 
   Expr *getReadyExpr() const {
-    return static_cast<Expr*>(SubExprs[SubExpr::Ready]);
+    return static_cast<Expr *>(SubExprs[SubExpr::Ready]);
   }
 
   Expr *getSuspendExpr() const {
-    return static_cast<Expr*>(SubExprs[SubExpr::Suspend]);
+    return static_cast<Expr *>(SubExprs[SubExpr::Suspend]);
   }
 
   Expr *getResumeExpr() const {
-    return static_cast<Expr*>(SubExprs[SubExpr::Resume]);
+    return static_cast<Expr *>(SubExprs[SubExpr::Resume]);
   }
 
   SourceLocation getBeginLoc() const LLVM_READONLY { return KeywordLoc; }
@@ -4519,6 +4491,556 @@ public:
   static bool classof(const Stmt *T) {
     return T->getStmtClass() == CoyieldExprClass;
   }
+};
+
+//===----------------------------------------------------------------------===//
+// Reflection
+//===----------------------------------------------------------------------===//
+/// ReflexprExpr - reflexpr expression
+class ReflexprExpr : public Expr {
+public:
+  // When changing this also change ReflexprExprBitfield
+  enum ArgumentKind {
+    REAK_Nothing,
+    REAK_Specifier,
+    REAK_NamedDecl,
+    REAK_TypeInfo,
+    REAK_BaseSpecifier
+  };
+
+private:
+  union {
+    std::nullptr_t Nothing;
+    tok::TokenKind SpecTok;
+    const NamedDecl *ReflDecl;
+    const TypeSourceInfo *TypeInfo;
+    const CXXBaseSpecifier *BaseSpec;
+    // TODO[reflexpr]
+  } Argument;
+
+  SourceLocation OpLoc, EndLoc;
+
+public:
+  /// \brief Construct an empty reflexpr expression.
+  explicit ReflexprExpr(EmptyShell Empty);
+
+  ReflexprExpr(QualType resultType, MetaobjectKind kind, SourceLocation opLoc,
+               SourceLocation endLoc);
+
+  ReflexprExpr(QualType resultType, tok::TokenKind specTok,
+               SourceLocation opLoc, SourceLocation endLoc);
+
+  ReflexprExpr(QualType resultType, const NamedDecl *nDecl,
+               SourceLocation opLoc, SourceLocation endLoc);
+
+  ReflexprExpr(QualType resultType, const TypeSourceInfo *TInfo,
+               bool removeSugar, SourceLocation opLoc, SourceLocation endLoc);
+
+  ReflexprExpr(QualType resultType, const CXXBaseSpecifier *baseSpec,
+               SourceLocation opLoc, SourceLocation endLoc);
+
+  ReflexprExpr(const ReflexprExpr &that);
+
+  static ReflexprExpr *
+  getGSReflexprExpr(ASTContext &Ctx, SourceLocation opLoc = SourceLocation(),
+                    SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *
+  getNoSpecifierReflexprExpr(ASTContext &Ctx,
+                             SourceLocation opLoc = SourceLocation(),
+                             SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *
+  getSpecifierReflexprExpr(ASTContext &Ctx, tok::TokenKind specTok,
+                           SourceLocation opLoc = SourceLocation(),
+                           SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *
+  getNamedDeclReflexprExpr(ASTContext &Ctx, const NamedDecl *nDecl,
+                           SourceLocation opLoc = SourceLocation(),
+                           SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *
+  getTypeReflexprExpr(ASTContext &Ctx, const TypeSourceInfo *TInfo,
+                      bool removeSugar, SourceLocation opLoc = SourceLocation(),
+                      SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *
+  getTypeReflexprExpr(ASTContext &Ctx, QualType Ty, bool removeSugar,
+                      SourceLocation opLoc = SourceLocation(),
+                      SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *
+  getBaseSpecifierReflexprExpr(ASTContext &Ctx, const CXXBaseSpecifier *bSpec,
+                               SourceLocation opLoc = SourceLocation(),
+                               SourceLocation endLoc = SourceLocation());
+
+  static ReflexprExpr *getSeqReflexprExpr(ASTContext &Ctx, ReflexprExpr *that,
+                                          MetaobjectSequenceKind MoSK);
+
+  static ReflexprExpr *getHideProtectedReflexprExpr(ASTContext &Ctx,
+                                                    ReflexprExpr *that);
+  static ReflexprExpr *getHidePrivateReflexprExpr(ASTContext &Ctx,
+                                                  ReflexprExpr *that);
+
+  static ReflexprExpr *fromMetaobjectId(ASTContext &, uintptr_t moid);
+  static uintptr_t toMetaobjectId(ASTContext &, const ReflexprExpr *that);
+  uintptr_t getIdValue(ASTContext &Ctx) const {
+    return toMetaobjectId(Ctx, this);
+  }
+  static ReflexprExpr *fromExpr(ASTContext &, Expr *E);
+
+  static StringRef getMetaobjectKindName(MetaobjectKind MoK);
+  static StringRef getMetaobjectKindName(ASTContext &Ctx, uintptr_t moid) {
+    return getMetaobjectKindName(fromMetaobjectId(Ctx, moid)->getKind());
+  }
+  StringRef getMetaobjectKindName(void) const {
+    return getMetaobjectKindName(getKind());
+  }
+
+  ArgumentKind getArgKind() const {
+    return ArgumentKind(ReflexprExprBits.ArgKind);
+  }
+  void setArgKind(ArgumentKind argKind) { ReflexprExprBits.ArgKind = argKind; }
+
+  MetaobjectKind getKind() const {
+    return MetaobjectKind(ReflexprExprBits.Kind);
+  }
+  void setKind(MetaobjectKind kind) { ReflexprExprBits.Kind = unsigned(kind); }
+
+  MetaobjectSequenceKind getSeqKind() const {
+    return MetaobjectSequenceKind(ReflexprExprBits.SeqKind);
+  }
+  void setSeqKind(MetaobjectSequenceKind seqKind) {
+    ReflexprExprBits.SeqKind = seqKind;
+  }
+
+  bool getRemoveSugar() const { return ReflexprExprBits.RemoveSugar != 0; }
+  void setRemoveSugar(bool value) {
+    ReflexprExprBits.RemoveSugar = value ? 1 : 0;
+  }
+
+  bool getHideProtected() const { return ReflexprExprBits.HideProtected != 0; }
+  void setHideProtected(bool value) {
+    ReflexprExprBits.HideProtected = value ? 1 : 0;
+  }
+  bool getHidePrivate() const { return ReflexprExprBits.HidePrivate != 0; }
+  void setHidePrivate(bool value) {
+    ReflexprExprBits.HidePrivate = value ? 1 : 0;
+  }
+
+  MetaobjectConcept getCategory() const;
+  bool isConcept(MetaobjectConcept Cat) const {
+    return (getCategory() & Cat) == Cat;
+  }
+
+  bool isArgumentGlobalScope() const {
+    if (getKind() == MOK_GlobalScope) {
+      assert(getArgKind() == REAK_Nothing);
+      return true;
+    }
+    return false;
+  }
+
+  bool isArgumentNoSpecifier() const {
+    if (getKind() == MOK_Specifier) {
+      return getArgKind() == REAK_Nothing;
+    }
+    return false;
+  }
+
+  bool isArgumentSpecifier() const {
+    if (getKind() == MOK_Specifier) {
+      return getArgKind() == REAK_Specifier;
+    }
+    return false;
+  }
+
+  tok::TokenKind getArgumentSpecifierKind() const {
+    assert(isArgumentSpecifier());
+    return Argument.SpecTok;
+  }
+
+  void setArgumentSpecifierKind(tok::TokenKind specTok) {
+    assert(isArgumentSpecifier());
+    Argument.SpecTok = specTok;
+  }
+
+  bool isArgumentNamedDecl() const { return getArgKind() == REAK_NamedDecl; }
+
+  const NamedDecl *getArgumentNamedDecl() const {
+    assert(isArgumentNamedDecl());
+    return Argument.ReflDecl;
+  };
+
+  void setArgumentNamedDecl(const NamedDecl *nDecl) {
+    assert(isArgumentNamedDecl());
+    Argument.ReflDecl = nDecl;
+  }
+
+  static const NamedDecl *findTypeDecl(QualType Ty);
+  const NamedDecl *findArgumentNamedDecl(ASTContext &, bool removeSugar) const;
+  const NamedDecl *findArgumentNamedDecl(ASTContext &Ctx) const {
+    return findArgumentNamedDecl(Ctx, getRemoveSugar());
+  }
+  const ValueDecl *findArgumentValueDecl(ASTContext &) const;
+
+  bool isArgumentType() const { return getArgKind() == REAK_TypeInfo; }
+
+  const TypeSourceInfo *getArgumentTypeInfo() const {
+    assert(isArgumentType());
+    return Argument.TypeInfo;
+  }
+
+  void setArgumentTypeInfo(const TypeSourceInfo *TInfo) {
+    assert(isArgumentType());
+    Argument.TypeInfo = TInfo;
+  }
+
+  QualType getArgumentType() const { return getArgumentTypeInfo()->getType(); }
+
+  QualType getBaseArgumentType(ASTContext &Ctx, bool removeSugar) const;
+  QualType getBaseArgumentType(ASTContext &Ctx) const {
+    return getBaseArgumentType(Ctx, getRemoveSugar());
+  }
+
+  bool reflectsType(void) const;
+  QualType getReflectedType(void) const;
+
+  bool isArgumentBaseSpecifier() const {
+    return getArgKind() == REAK_BaseSpecifier;
+  }
+
+  const CXXBaseSpecifier *getArgumentBaseSpecifier() const {
+    assert(isArgumentBaseSpecifier());
+    return Argument.BaseSpec;
+  };
+
+  void setArgumentBaseSpecifier(const CXXBaseSpecifier *bSpec) {
+    assert(isArgumentBaseSpecifier());
+    Argument.BaseSpec = bSpec;
+  }
+
+  bool isArgumentDependent(void) const;
+
+  AccessSpecifier getArgumentAccess(ASTContext &Ctx) const;
+
+  SourceLocation getOperatorLoc() const { return OpLoc; }
+  void setOperatorLoc(SourceLocation L) { OpLoc = L; }
+
+  SourceLocation getRParenLoc() const { return EndLoc; }
+  void setRParenLoc(SourceLocation L) { EndLoc = L; }
+
+  SourceLocation getBeginLoc() const LLVM_READONLY { return OpLoc; }
+  SourceLocation getEndLoc() const LLVM_READONLY { return getRParenLoc(); }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == ReflexprExprClass;
+  }
+
+  // Iterators
+  child_range children();
+};
+
+class MetaobjectIdExpr : public Expr {
+  uintptr_t Value;
+  SourceLocation Loc;
+
+public:
+  MetaobjectIdExpr(uintptr_t v, QualType Ty, SourceLocation l)
+      : Expr(MetaobjectIdExprClass, Ty, VK_RValue, OK_Ordinary, false, false,
+             false, false),
+        Value(v), Loc(l) {}
+
+  explicit MetaobjectIdExpr(EmptyShell Empty)
+      : Expr(MetaobjectIdExprClass, Empty) {}
+
+  MetaobjectConcept getCategory(void) const;
+
+  uintptr_t getValue() const { return Value; }
+  void setValue(uintptr_t V) { Value = V; }
+
+  ReflexprExpr *asReflexprExpr(ASTContext &Context) const {
+    return ReflexprExpr::fromMetaobjectId(Context, Value);
+  }
+
+  SourceLocation getBeginLoc() const LLVM_READONLY { return Loc; }
+  SourceLocation getEndLoc() const LLVM_READONLY { return Loc; }
+
+  SourceLocation getLocation() const { return Loc; }
+  void setLocation(SourceLocation L) { Loc = L; }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == MetaobjectIdExprClass;
+  }
+
+  child_range children() {
+    return child_range(child_iterator(), child_iterator());
+  }
+};
+
+class MetaobjectOpExprBase {
+protected:
+  static bool _anyTypeDependent(unsigned, Expr **);
+  static bool _anyValueDependent(unsigned, Expr **);
+  static bool _anyInstDependent(unsigned, Expr **);
+  static bool _anyHasUnexpandedPack(unsigned, Expr **);
+
+  static ReflexprExpr *asReflexpr(ASTContext &Ctx, uintptr_t moid) {
+    return ReflexprExpr::fromMetaobjectId(Ctx, moid);
+  }
+  static bool conceptIsA(MetaobjectConcept Spec, MetaobjectConcept Gen) {
+    return (Spec & Gen) == Gen;
+  }
+
+  static AccessSpecifier getArgumentAccess(ASTContext &Ctx, uintptr_t moid);
+
+  static llvm::APSInt makeBoolResult(ASTContext &Ctx, bool);
+  static llvm::APSInt makeUIntResult(ASTContext &Ctx, unsigned);
+  static llvm::APSInt makeULongResult(ASTContext &Ctx, uint64_t);
+  static llvm::APSInt makeMetaobjResult(ASTContext &Ctx, ReflexprExpr *);
+  static llvm::APSInt makeConstResult(ASTContext &Ctx, llvm::APSInt);
+
+  static llvm::APSInt opGetConstant(ASTContext &, uintptr_t moid);
+
+public:
+  static QualType getResultKindType(ASTContext &Ctx, unsigned arity,
+                                    Expr **argExpr, MetaobjectOpResult OpRes);
+
+  static bool queryExprUIntValue(ASTContext &Ctx, uint64_t &val, Expr *);
+  static bool queryExprMetaobjectId(ASTContext &Ctx, uintptr_t &moid, void *,
+                                    Expr *);
+};
+
+/// UnaryMetaobjectOpExpr - unary metaobject operation expression
+class UnaryMetaobjectOpExpr : public Expr, public MetaobjectOpExprBase {
+
+  Stmt *ArgExpr;
+  SourceLocation OpLoc, EndLoc;
+
+  static bool getTraitValue(UnaryMetaobjectOp, MetaobjectConcept);
+
+  static uintptr_t opGetIdValue(ASTContext &, uintptr_t moid);
+
+  static std::size_t opSourceFileLen(ASTContext &, uintptr_t moid);
+  static std::string opGetSourceFile(ASTContext &, uintptr_t moid);
+  static unsigned opGetSourceLine(ASTContext &, uintptr_t moid);
+  static unsigned opGetSourceColumn(ASTContext &, uintptr_t moid);
+
+  static bool opIsAnonymous(ASTContext &, uintptr_t moid);
+  static std::size_t opBaseNameLen(ASTContext &, uintptr_t moid);
+  static std::string opGetBaseName(ASTContext &, uintptr_t moid);
+  static std::size_t opDisplayNameLen(ASTContext &, uintptr_t moid);
+  static std::string opGetDisplayName(ASTContext &, uintptr_t moid);
+
+  static ReflexprExpr *opGetScope(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetType(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetAliased(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetTagSpecifier(ASTContext &, uintptr_t moid);
+
+  static bool opIsEnum(ASTContext &, uintptr_t moid);
+  static bool opIsClass(ASTContext &, uintptr_t moid);
+  static bool opIsStruct(ASTContext &, uintptr_t moid);
+  static bool opIsUnion(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetAccessSpecifier(ASTContext &, uintptr_t moid);
+  static bool opIsPublic(ASTContext &, uintptr_t moid);
+  static bool opIsProtected(ASTContext &, uintptr_t moid);
+  static bool opIsPrivate(ASTContext &, uintptr_t moid);
+
+  static ReflexprExpr *opGetBaseClasses(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetMemberTypes(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetMemberVariables(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opGetMemberConstants(ASTContext &, uintptr_t moid);
+
+  static ReflexprExpr *opGetBaseClass(ASTContext &, uintptr_t moid);
+
+  static bool opIsScopedEnum(ASTContext &, uintptr_t moid);
+  static bool opIsStatic(ASTContext &, uintptr_t moid);
+
+  static bool opIsVirtual(ASTContext &, uintptr_t moid);
+
+  static ReflexprExpr *opHideProtected(ASTContext &, uintptr_t moid);
+  static ReflexprExpr *opHidePrivate(ASTContext &, uintptr_t moid);
+
+  static unsigned opGetSize(ASTContext &, uintptr_t moid);
+
+public:
+  /// \brief Construct an empty metaobject operation expression.
+  explicit UnaryMetaobjectOpExpr(EmptyShell Empty)
+      : Expr(UnaryMetaobjectOpExprClass, Empty), ArgExpr(nullptr) {}
+
+  UnaryMetaobjectOpExpr(ASTContext &, UnaryMetaobjectOp Oper,
+                        MetaobjectOpResult OpRes, QualType resultType,
+                        Expr *argExpr, SourceLocation opLoc,
+                        SourceLocation endLoc);
+
+  UnaryMetaobjectOp getKind(void) const {
+    return UnaryMetaobjectOp(UnaryMetaobjectOpExprBits.Kind);
+  }
+  void setKind(UnaryMetaobjectOp Kind) {
+    UnaryMetaobjectOpExprBits.Kind = unsigned(Kind);
+  }
+
+  MetaobjectOpResult getResultKind(void) const {
+    return MetaobjectOpResult(UnaryMetaobjectOpExprBits.ResKind);
+  }
+  void setResultKind(MetaobjectOpResult ResKind) {
+    UnaryMetaobjectOpExprBits.ResKind = unsigned(ResKind);
+  }
+
+  Expr *getArgumentExpr(void) const { return static_cast<Expr *>(ArgExpr); }
+
+  void setArgumentExpr(Expr *E) { ArgExpr = E; }
+
+  bool queryArgUIntValue(ASTContext &Ctx, uint64_t &val) const {
+    return queryExprUIntValue(Ctx, val, getArgumentExpr());
+  }
+
+  bool queryArgMetaobjectId(ASTContext &Ctx, void *EvlInfo,
+                            uintptr_t &moid) const {
+    return queryExprMetaobjectId(Ctx, moid, EvlInfo, getArgumentExpr());
+  }
+
+  static StringRef getOperationSpelling(UnaryMetaobjectOp MoOp);
+  StringRef getOperationSpelling(void) const {
+    return getOperationSpelling(getKind());
+  }
+
+  static bool isOperationApplicable(MetaobjectKind MoK, UnaryMetaobjectOp MoOp);
+  static bool isOperationApplicable(ASTContext &Ctx, uintptr_t moid,
+                                    UnaryMetaobjectOp MoOp) {
+    return isOperationApplicable(asReflexpr(Ctx, moid)->getKind(), MoOp);
+  }
+
+  static void unpackSequence(ASTContext &, uintptr_t moid,
+                             std::vector<llvm::APSInt> &dest);
+
+  bool hasIntResult(void) const { return getResultKind() != MOOR_String; }
+
+  static llvm::APSInt getIntResult(ASTContext &Ctx, UnaryMetaobjectOp,
+                                   uintptr_t moid);
+  bool getIntResult(ASTContext &Ctx, void *EvlInfo, llvm::APSInt &result) const;
+
+  static std::string getStrResult(ASTContext &, UnaryMetaobjectOp,
+                                  uintptr_t moid);
+  static bool getStrResult(ASTContext &, UnaryMetaobjectOp, void *EvlInfo,
+                           Expr *argExpr, std::string &);
+
+  static const ValueDecl *getValueDeclResult(ASTContext &, UnaryMetaobjectOp,
+                                             uintptr_t moid);
+  static const ValueDecl *getValueDeclResult(ASTContext &, UnaryMetaobjectOp,
+                                             void *EvlInfo, Expr *argExpr);
+
+  static QualType getValueDeclType(ASTContext &, UnaryMetaobjectOp,
+                                   const ValueDecl *valDecl);
+
+  bool hasOpResultType() const;
+  QualType getOpResultType(ASTContext &) const;
+
+  SourceLocation getOperatorLoc() const { return OpLoc; }
+  void setOperatorLoc(SourceLocation L) { OpLoc = L; }
+
+  SourceLocation getRParenLoc() const { return EndLoc; }
+  void setRParenLoc(SourceLocation L) { EndLoc = L; }
+
+  SourceLocation getBeginLoc() const LLVM_READONLY { return OpLoc; }
+  SourceLocation getEndLoc() const LLVM_READONLY { return getRParenLoc(); }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == UnaryMetaobjectOpExprClass;
+  }
+
+  // Iterators
+  child_range children();
+};
+
+/// NaryMetaobjectOpExpr - n-ary metaobject operation expression
+class NaryMetaobjectOpExpr : public Expr, public MetaobjectOpExprBase {
+
+  Stmt *ArgExpr[2];
+  SourceLocation OpLoc, EndLoc;
+
+public:
+  /// \brief Construct an empty metaobject operation expression.
+  explicit NaryMetaobjectOpExpr(EmptyShell Empty)
+      : Expr(NaryMetaobjectOpExprClass, Empty), ArgExpr{nullptr, nullptr} {}
+
+  NaryMetaobjectOpExpr(ASTContext &, NaryMetaobjectOp Oper,
+                       MetaobjectOpResult OpRes, QualType resultType,
+                       unsigned arity, Expr **argExpr, SourceLocation opLoc,
+                       SourceLocation endLoc);
+
+  static constexpr unsigned MinArity = 2;
+  static constexpr unsigned MaxArity = 2;
+
+  unsigned getArity(void) const { return 2; }
+
+  NaryMetaobjectOp getKind(void) const {
+    return NaryMetaobjectOp(NaryMetaobjectOpExprBits.Kind);
+  }
+  void setKind(NaryMetaobjectOp Kind) {
+    NaryMetaobjectOpExprBits.Kind = unsigned(Kind);
+  }
+
+  MetaobjectOpResult getResultKind(void) const {
+    return MetaobjectOpResult(NaryMetaobjectOpExprBits.ResKind);
+  }
+  void setResultKind(MetaobjectOpResult ResKind) {
+    NaryMetaobjectOpExprBits.ResKind = unsigned(ResKind);
+  }
+
+  Expr *getArgumentExpr(unsigned i) const {
+    assert(i < getArity());
+    return static_cast<Expr *>(ArgExpr[i]);
+  }
+
+  void setArgumentExpr(unsigned i, Expr *E) {
+    assert(i < getArity());
+    ArgExpr[i] = E;
+  }
+
+  bool queryArgUIntValue(ASTContext &Ctx, uint64_t &val, unsigned i) const {
+    return queryExprUIntValue(Ctx, val, getArgumentExpr(i));
+  }
+
+  bool queryArgMetaobjectId(ASTContext &Ctx, void *EvlInfo, uintptr_t &moid,
+                            unsigned i) const {
+    return queryExprMetaobjectId(Ctx, moid, EvlInfo, getArgumentExpr(i));
+  }
+
+  static StringRef getOperationSpelling(NaryMetaobjectOp MoOp);
+  StringRef getOperationSpelling(void) const {
+    return getOperationSpelling(getKind());
+  }
+
+  static bool isOperationApplicable(MetaobjectKind MoK, NaryMetaobjectOp MoOp);
+  static bool isOperationApplicable(ASTContext &Ctx, uintptr_t moid,
+                                    NaryMetaobjectOp MoOp) {
+    return isOperationApplicable(asReflexpr(Ctx, moid)->getKind(), MoOp);
+  }
+
+  static bool opReflectsSame(ASTContext &Ctx, uintptr_t moid1, uintptr_t moid2);
+  static ReflexprExpr *opGetElement(ASTContext &, uintptr_t moid, unsigned idx);
+
+  bool hasIntResult(void) const { return true; }
+
+  bool getIntResult(ASTContext &Ctx, void *EvlInfo, llvm::APSInt &result) const;
+
+  SourceLocation getOperatorLoc() const { return OpLoc; }
+  void setOperatorLoc(SourceLocation L) { OpLoc = L; }
+
+  SourceLocation getRParenLoc() const { return EndLoc; }
+  void setRParenLoc(SourceLocation L) { EndLoc = L; }
+
+  SourceLocation getBeginLoc() const LLVM_READONLY { return OpLoc; }
+  SourceLocation getEndLoc() const LLVM_READONLY { return getRParenLoc(); }
+
+  static bool classof(const Stmt *T) {
+    return T->getStmtClass() == NaryMetaobjectOpExprClass;
+  }
+
+  // Iterators
+  child_range children();
 };
 
 } // namespace clang

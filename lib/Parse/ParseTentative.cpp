@@ -203,7 +203,7 @@ Parser::TPResult Parser::TryConsumeDeclarationSpecifier() {
     }
 
     if (Tok.isOneOf(tok::identifier, tok::coloncolon, tok::kw_decltype,
-                    tok::annot_template_id) &&
+                    tok::kw___unrefltype, tok::annot_template_id) &&
         TryAnnotateCXXScopeToken())
       return TPResult::Error;
     if (Tok.is(tok::annot_cxxscope))
@@ -1108,6 +1108,7 @@ Parser::isExpressionOrTypeSpecifierSimple(tok::TokenKind Kind) {
   case tok::kw_char8_t:
   case tok::kw_char16_t:
   case tok::kw_char32_t:
+  case tok::kw___metaobject_id:
   case tok::kw__Decimal32:
   case tok::kw__Decimal64:
   case tok::kw__Decimal128:
@@ -1354,7 +1355,12 @@ Parser::isCXXDeclarationSpecifier(Parser::TPResult BracedCastResult,
     LLVM_FALLTHROUGH;
   }
   case tok::kw___super:
+  case tok::kw___unrefltype:
   case tok::kw_decltype:
+    if (!getLangOpts().Reflection && Tok.is(tok::kw___unrefltype)) {
+      Diag(Tok, diag::err_using_unrefltype_without_reflection);
+      return TPResult::False;
+    }
     // Annotate typenames and C++ scope specifiers.  If we get one, just
     // recurse to handle whatever we get.
     if (TryAnnotateTypeOrScopeToken())
@@ -1598,8 +1604,10 @@ Parser::isCXXDeclarationSpecifier(Parser::TPResult BracedCastResult,
   case tok::kw_double:
   case tok::kw__Float16:
   case tok::kw___float128:
+  case tok::kw___metaobject_id:
   case tok::kw_void:
   case tok::annot_decltype:
+  case tok::annot___unrefltype:
     if (NextToken().is(tok::l_paren))
       return TPResult::Ambiguous;
 
@@ -1659,6 +1667,7 @@ bool Parser::isCXXDeclarationSpecifierAType() {
   case tok::annot_decltype:
   case tok::annot_template_id:
   case tok::annot_typename:
+  case tok::annot___unrefltype:
   case tok::kw_typeof:
   case tok::kw___underlying_type:
     return true;
@@ -1690,6 +1699,7 @@ bool Parser::isCXXDeclarationSpecifierAType() {
   case tok::kw_double:
   case tok::kw__Float16:
   case tok::kw___float128:
+  case tok::kw___metaobject_id:
   case tok::kw_void:
   case tok::kw___unknown_anytype:
   case tok::kw___auto_type:
